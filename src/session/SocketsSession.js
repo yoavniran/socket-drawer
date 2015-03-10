@@ -1,7 +1,8 @@
 "use strict";
 
-var tokenizer = require("./tokenizer"),
-    socketsUtils = require("../utils");
+var _ = require("lodash"),
+    tokenizer = require("./tokenizer"),
+    socketsUtils = require("../common/utils");
 
 var SocketsSession = (function () {
 
@@ -16,6 +17,7 @@ var SocketsSession = (function () {
         this._propertyBag = {};
         this._initialized = false;
         this._initializing = false;
+        this._destroyed = false;
 
         this._propertyBag[idKey] = id;
         this.set(createdTimeKey, Date.now());
@@ -36,6 +38,14 @@ var SocketsSession = (function () {
         return this.get(tokenKey);
     };
 
+    SocketsSession.prototype.isReady = function () {
+        return (this._initialized && !this._initializing && !this._destroyed);
+    };
+
+    SocketsSession.prototype.isDestroyed = function(){
+        return this._destroyed;
+    };
+
     SocketsSession.prototype.getId = function () {
         return this.get(idKey);
     };
@@ -50,7 +60,7 @@ var SocketsSession = (function () {
 
     SocketsSession.prototype.set = function (key, value) {
 
-        if (key === idKey){
+        if (key === idKey) {
             throw new Error("SocketsSession - session id cannot be modified");
         }
 
@@ -64,6 +74,9 @@ var SocketsSession = (function () {
         _.each(_.keys(props), function (key) {
             delete props[key];
         });
+
+        this._initialized = false;
+        this._destroyed = true;
     };
 
     SocketsSession.prototype.initialize = function (options, callback) {

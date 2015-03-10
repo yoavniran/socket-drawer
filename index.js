@@ -1,8 +1,14 @@
 "use strict";
 
-var server = require("./SocketsServer");
-var tokenizer = require("./session/tokenizer");
+var Server = require("./src/SocketsServer");
+var tokenizer = require("./src/session/tokenizer");
+var consts = require("./src/common/consts");
 
-server.tokenizer = tokenizer;
+var api = {
+    SocketsServer: Server,
+    tokenizer: tokenizer,
 
-module.exports = server;
+    IMPLEMENTATIONS: consts.IMPLEMENTATIONS
+};
+
+module.exports = api;

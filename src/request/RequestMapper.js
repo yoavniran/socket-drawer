@@ -1,7 +1,6 @@
 var _ = require("lodash"),
     pathToRegex = require("path-to-regexp"),
-    logger = require("../../common/logger"),
-    METHODS = require("../../common/consts").HTTP_METHODS;
+    METHODS = require("../common/consts").HTTP_METHODS;
 
 var METHOD_IN_TYPE_RGX = /^<(\w+)>\X*/;
 
@@ -47,8 +46,6 @@ var RequestMapper = (function () {
         var res = data.resource;
         var handler;
 
-        logger.debug("[RequestMapper]:: _processConnectionMessage: entered with res: ", res);
-
         if (res) {
 
             var path = _getPathWithMethod(res, data.method);
@@ -58,20 +55,12 @@ var RequestMapper = (function () {
             if (requestMapping) {
                 handler = _getRequestHandler.call(this, requestMapping, path);
             }
-            else {
-                logger.debug("[RequestMapper]:: _processConnectionMessage: no handler found for request: " + res);
-            }
-        }
-        else {
-            logger.warn("[RequestMapper]:: _processConnectionMessage: msg received without resource property");
         }
 
         return handler;
     }
 
     function _getRequestHandler(requestMapping, path) {
-
-        logger.debug("[RequestMapper]:: _getRequestHandler: found handler for resource: " + path);
 
         var keys = _parseRequestKeys(path, requestMapping);
 
@@ -126,7 +115,7 @@ var RequestMapper = (function () {
             rHandler = rHandler.handler;
 
             if (!_.isFunction(rHandler)) {
-                throw new Error("Sockets request mapping requires handler to be a function");
+                throw new TypeError("SD.RequestMapper - Sockets request mapping requires handler to be a function");
             }
         }
 

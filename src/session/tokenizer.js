@@ -1,7 +1,7 @@
 "use strict";
 
-var crypto = require("crypto");
-var async = require("async");
+var crypto = require("crypto"),
+    async = require("async");
 
 var token = (function () {
 
@@ -68,8 +68,8 @@ var token = (function () {
             crypto.randomBytes(length, function (err, buffer) {
 
                 if (err) {
-                    setImmediate(function () {
-                        crypto.randomBytes(length, function (err, buffer2) { //give another try - perhaps now we got enough entropy
+                    setImmediate(function () { //give another try - perhaps now we got enough entropy
+                        crypto.randomBytes(length, function (err, buffer2) {
                             finish(err, buffer2);
                         });
                     });
