@@ -4,8 +4,10 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-mocha-test");
-    grunt.loadNpmTasks("grunt-mocha-cov");
+    grunt.loadNpmTasks("grunt-blanket");
+    grunt.loadNpmTasks("grunt-coveralls");
 
     grunt.initConfig({
         "pkg": grunt.file.readJSON("package.json"),
@@ -19,38 +21,88 @@ module.exports = function (grunt) {
 
         "clean": ["./output/**/*"],
 
+        copy: {
+            test: {
+                files: [
+                    {expand: true, src: "./test/**/*.js", dest: "./output/coverage/"}
+                ]
+            }
+        },
+
+        blanket: {        //output the instrumented files
+            output: {
+                src: "./src/",
+                dest: "./output/coverage/src"
+            }
+        },
+
         mochaTest: {
             test: {
                 options: {
                     reporter: "spec",
                     captureFile: "output/results.txt" // Optionally capture the reporter output to a file
                 },
-                src: ["test/sd.tests.js"]
+                src: ["./test/sd.tests.js"]
+            },
+            coverage: {
+                options: {
+                    reporter: "mocha-lcov-reporter",
+                    quiet: true,
+                    captureFile: "./output/coverage.lcov.txt"
+                },
+                src: ["./output/coverage/test/sd.tests.js"]
+            },
+            htmlcov:{
+                options: {
+                    reporter: "html-cov",
+                    quiet: true,
+                    captureFile: "./output/coverage.html"
+                },
+                src: ["./output/coverage/test/sd.tests.js"]
+            },
+            "travis-cov": {
+                options: {
+                    reporter: "travis-cov"
+                },
+                src: ["./output/coverage/test/sd.tests.js"]
             }
         },
 
-        mochacov: {
-            coverage: {
-                options: {
-                    coveralls: true,
-                    captureFile: "output/results.txt"
-                }
-            },
-            local:{
-              options:{
-                  reporter: "html-cov"
-              }
-            },
+        coveralls: {
             options: {
-                files: ["test/sd.tests.js"],
-                output: "output/coverage.html"
+                // When true, grunt-coveralls will only print a warning rather than
+                // an error, to prevent CI builds from failing unnecessarily (e.g. if
+                // coveralls.io is down). Optional, defaults to false.
+                force: true
+            },
+            sdcoverage:{
+                src: "./output/coverage.lcov.txt"
             }
         }
+
+//        mochacov: {
+//            coverage: {
+//                options: {
+//                    quiet:false,
+//                    coveralls: true
+//                }
+//            },
+//            local: {
+//                options: {
+//                    reporter: "html-cov",
+//                    coverage: true
+//                }
+//            },
+//            options: {
+//                files: ["test/sd.tests.js"],
+//                output: "output/coverage.html"
+//            }
+//        }
     });
 
-    grunt.registerTask("default", ["jshint", "clean", "mochaTest"]);
-    grunt.registerTask("test", ["clean", "mochaTest"]);
-    grunt.registerTask("coveralls", ["clean", "mochacov:coverage"]);
-    grunt.registerTask("localcov", ["clean", "mochacov:local"]);
+    grunt.registerTask("test", ["clean", "mochaTest:test"]);
+    grunt.registerTask("coverage", ["clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:htmlcov", "coveralls"]);
+    grunt.registerTask("build", ["jshint", "clean", "mochaTest", "coverage", "mochaTest:travis-cov"]);
 
+    grunt.registerTask("default", ["jshint", "clean", "test"]);
 };

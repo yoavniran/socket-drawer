@@ -1,12 +1,17 @@
 var chai = require("chai"),
     expect = chai.expect,
     dirtyChai = require("dirty-chai"),
+    sinon = require("sinon"),
+    sinonChai = require("sinon-chai"),
     SocketServer = require("../src/SocketsServer");
 
 describe("SocketServer Tests", function () {
     "use strict";
 
-    chai.use(dirtyChai);
+
+    chai.use(sinonChai); //add sinon syntax to assertions
+    chai.use(dirtyChai); //use lint-friendly chai assertions!
+
 
     describe("testing SocketServer defaults values", function () {
 
@@ -40,6 +45,34 @@ describe("SocketServer Tests", function () {
         it("debug should have the default value: false", function () {
             var debug = server.get("debug");
             expect(debug).to.be.false();
+        });
+
+    });
+
+    describe("test start method", function () {
+
+        var providerFactory = require("../src/providers/factory");
+        var getProviderStub, getProviderStubStart;
+
+        before(function beforeStartMethodTest() {
+
+            getProviderStub = sinon.stub(providerFactory, "getProvider");
+            getProviderStubStart = sinon.spy();
+
+            getProviderStub.returns({
+                start: getProviderStubStart,
+                onNewConnection: sinon.spy()
+            });
+        });
+
+        it("should initialize provider", function () {
+
+            var server = new SocketServer({});
+
+            server.start();
+
+            expect(getProviderStubStart).to.have.been.called();
+
         });
 
     });

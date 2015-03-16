@@ -4,3 +4,6 @@ node_modules/
 npm-debug.log
 results.txt
 .coveralls.yml
+output/coverage.lcov.txt
+output/coverage/
+output/coverage.html

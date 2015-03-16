@@ -18,6 +18,7 @@ var events = require("events"),
 //todo: add API for closing the socket server
 //todo: allow registering custom provider
 //todo: implement debug npm module for dev/troubleshooting
+//todo: add coverage bottom threshold for build to fail under
 
 var SocketsServer = (function () {
     "use strict";
