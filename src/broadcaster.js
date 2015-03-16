@@ -1,7 +1,8 @@
-"use strict";
+
 var _ = require("lodash");
 
 var broadcaster = (function () {
+    "use strict";
 
     function broadcast(connections, msg) {
 
@@ -31,7 +32,7 @@ var broadcaster = (function () {
     return{
         broadcast: broadcast,
         publishToConnection: publishToConnection
-    }
+    };
 })();
 
 

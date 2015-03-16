@@ -4,7 +4,7 @@ var http = require("http"),
     SocketsServer = require("../src/SocketsServer");
 
 (function () {
-
+             "use strict";
     console.log("starting test...");
 
     var httpServer = http.createServer();
