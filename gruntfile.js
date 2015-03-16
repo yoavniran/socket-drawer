@@ -36,15 +36,11 @@ module.exports = function (grunt) {
                     captureFile: "output/results.txt"
                 }
             },
-//            test: {
-//                options: {
-//                    reporter: "spec",
-//                    captureFile: "output/results.txt"
-//                }
-//            },
-//            options: {
-//                reporter: "html-cov",
-//            },
+            local:{
+              options:{
+                  reporter: "html-cov"
+              }
+            },
             options: {
                 files: ["test/sd.tests.js"],
                 output: "output/coverage.html"
@@ -54,5 +50,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("default", ["jshint", "clean", "mochaTest"]);
     grunt.registerTask("test", ["clean", "mochaTest"]);
-    grunt.registerTask("coverage", ["clean", "mochacov:coverage"]);
+    grunt.registerTask("coveralls", ["clean", "mochacov:coverage"]);
+    grunt.registerTask("localcov", ["clean", "mochacov:local"]);
+
 };
