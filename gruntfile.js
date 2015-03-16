@@ -3,8 +3,8 @@ module.exports = function (grunt) {
     require("time-grunt")(grunt);
 
     grunt.loadNpmTasks("grunt-contrib-jshint");
-    grunt.loadNpmTasks("grunt-mocha-test");
     grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks("grunt-mocha-test");
     grunt.loadNpmTasks("grunt-mocha-cov");
 
     grunt.initConfig({
@@ -24,7 +24,6 @@ module.exports = function (grunt) {
                 options: {
                     reporter: "spec",
                     captureFile: "output/results.txt" // Optionally capture the reporter output to a file
-//                    require: "coverage/blanket",
                 },
                 src: ["test/sd.tests.js"]
             }
@@ -55,6 +54,5 @@ module.exports = function (grunt) {
 
     grunt.registerTask("default", ["jshint", "clean", "mochaTest"]);
     grunt.registerTask("test", ["clean", "mochaTest"]);
-
     grunt.registerTask("coverage", ["clean", "mochacov:coverage"]);
 };

@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/yoavniran/socket-drawer/badge.svg)](https://coveralls.io/r/yoavniran/socket-drawer)
+
 this is currently a  placeholder for a new project - Socket Drawer.
 
 The idea behind it is providing a basic framework (ala express)
