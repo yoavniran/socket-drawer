@@ -23,6 +23,9 @@
         "describe": false,
         "it": false,
         "setImmediate": false,
-        "console": false //todo: remove this one!!!
+        "console": false, //todo: remove this one!!!
+        "before": false,
+        "beforeEach" :false,
+        "after": false
     }
 }

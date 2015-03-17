@@ -25,7 +25,7 @@
         }
     ],
     "scripts": {
-        "test": "node ./node_modules/mocha/bin/mocha ./test/sd.tests.js"
+        "test": "grunt build --verbose"
     },
     "config": {
         "blanket": {
@@ -34,7 +34,7 @@
             ]
         },
         "travis-cov": {
-            "threshold": 60
+            "threshold": 90
         }
     },
     "dependencies": {

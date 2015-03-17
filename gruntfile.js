@@ -102,7 +102,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test", ["clean", "mochaTest:test"]);
     grunt.registerTask("coverage", ["clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:htmlcov", "coveralls"]);
-    grunt.registerTask("build", ["jshint", "clean", "mochaTest", "coverage", "mochaTest:travis-cov"]);
+    grunt.registerTask("build", ["jshint", "test", "coverage", "mochaTest:travis-cov"]);
 
     grunt.registerTask("default", ["jshint", "clean", "test"]);
 };
