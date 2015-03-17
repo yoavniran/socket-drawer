@@ -26,6 +26,7 @@
         "console": false, //todo: remove this one!!!
         "before": false,
         "beforeEach" :false,
-        "after": false
+        "after": false,
+        "afterEach": false
     }
 }
