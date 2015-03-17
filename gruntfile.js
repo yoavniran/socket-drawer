@@ -10,16 +10,16 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-coveralls");
 
     grunt.initConfig({
-        "pkg": grunt.file.readJSON("package.json"),
+        pkg: grunt.file.readJSON("package.json"),
 
-        "jshint": {
-            "files": ["./src/*.js", "./test/*.js"],
-            "options": {
-                "jshintrc": ".jshintrc"
+        jshint: {
+            files: ["./src/*.js", "./test/*.js"],
+            options: {
+                jshintrc: ".jshintrc"
             }
         },
 
-        "clean": ["./output/**/*"],
+        clean: ["./output/**/*"],
 
         copy: {
             test: {
@@ -52,7 +52,7 @@ module.exports = function (grunt) {
                 },
                 src: ["./output/coverage/test/sd.tests.js"]
             },
-            htmlcov:{
+            htmlcov: {
                 options: {
                     reporter: "html-cov",
                     quiet: true,
@@ -75,34 +75,16 @@ module.exports = function (grunt) {
                 // coveralls.io is down). Optional, defaults to false.
                 force: true
             },
-            sdcoverage:{
+            sdcoverage: {
                 src: "./output/coverage.lcov.txt"
             }
         }
-
-//        mochacov: {
-//            coverage: {
-//                options: {
-//                    quiet:false,
-//                    coveralls: true
-//                }
-//            },
-//            local: {
-//                options: {
-//                    reporter: "html-cov",
-//                    coverage: true
-//                }
-//            },
-//            options: {
-//                files: ["test/sd.tests.js"],
-//                output: "output/coverage.html"
-//            }
-//        }
     });
 
     grunt.registerTask("test", ["clean", "mochaTest:test"]);
+    grunt.registerTask("localcov", ["clean", "blanket", "copy:test", "mochaTest:htmlcov"]);
     grunt.registerTask("coverage", ["clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:htmlcov", "coveralls"]);
     grunt.registerTask("build", ["jshint", "test", "coverage", "mochaTest:travis-cov"]);
 
-    grunt.registerTask("default", ["jshint", "clean", "test"]);
+    grunt.registerTask("default", ["jshint", "test"]);
 };

@@ -49,7 +49,7 @@ var SocketsServer = (function () {
      *              httpServer - (mandatory)
      *              implementation (default: ws) - ws, sockjs, socket.io
      *              sockUrl - (optional) location of public js file (sockjs)
-     *              path - the relative path the web sockets server will listen on
+     *              path - (optional) the relative path the web sockets server will listen on
      *              handlers - (optional) Array of handler maps
      *              config - (optional) collection of configs that can be used during the lifetime of the server and whe handling requests
      *                         - session-manager
@@ -76,7 +76,7 @@ var SocketsServer = (function () {
         options.implementation = options.implementation || consts.IMPLEMENTATIONS.WS; //default to WS
 
         this._options = options;
-        this._propertyBag = {};
+        this._propertyBag = Object.create(null); //"clean" set - not even inheriting from Object
         this._socketsProvider = null;
         this._socketsWares = [];
         this._connections = {};
@@ -201,7 +201,7 @@ var SocketsServer = (function () {
 
     function _initialize(options) {
 
-        this.set(options.config); //use everything in config
+        this.set(options.config); //use everything in config as properties
 
         this.set(REQUEST_PARSER_KEY, (options[REQUEST_PARSER_KEY] || defaultRequestParser));
         this.set(BROADCASTER_KEY, (options[BROADCASTER_KEY] || defaultBroadcaster));
@@ -230,7 +230,6 @@ var SocketsServer = (function () {
 
         _log.call(this, "SD.SocketsServer - websockets implementation is: " + options.implementation);
         this._socketsProvider = providerFactory.getProvider(options.implementation, options);
-
         this._socketsProvider.start(options);
         this._socketsProvider.onNewConnection(_onIncomingConnection.bind(this), options);
     }

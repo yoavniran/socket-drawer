@@ -3,15 +3,14 @@ var chai = require("chai"),
     dirtyChai = require("dirty-chai"),
     sinon = require("sinon"),
     sinonChai = require("sinon-chai"),
+    consts = require("../src/common/consts"),
     SocketServer = require("../src/SocketsServer");
 
-describe("SocketServer Tests", function () {
+describe("SocketServer tests", function () {
     "use strict";
-
 
     chai.use(sinonChai); //add sinon syntax to assertions
     chai.use(dirtyChai); //use lint-friendly chai assertions!
-
 
     describe("testing SocketServer defaults values", function () {
 
@@ -52,30 +51,51 @@ describe("SocketServer Tests", function () {
     describe("test start method", function () {
 
         var providerFactory = require("../src/providers/factory");
-        var getProviderStub, getProviderStubStart;
+        var providerStartSpy, providerOnNewConnectionSpy,
+            factoryMock, factoryMockExp;
 
-        before(function beforeStartMethodTest() {
+        beforeEach(function beforeStartMethodTest() {
 
-            getProviderStub = sinon.stub(providerFactory, "getProvider");
-            getProviderStubStart = sinon.spy();
+            factoryMock = sinon.mock(providerFactory);
+            providerStartSpy = sinon.spy();
+            providerOnNewConnectionSpy = sinon.spy();
 
-            getProviderStub.returns({
-                start: getProviderStubStart,
-                onNewConnection: sinon.spy()
-            });
+            factoryMockExp = factoryMock.expects("getProvider")
+                .once()
+                .returns({
+                    start: providerStartSpy,
+                    onNewConnection: providerOnNewConnectionSpy
+                });
         });
 
-        it("should initialize provider", function () {
+        afterEach(function afterStartMethodText() {
+            factoryMock.restore();
+        });
+
+        it("should initialize provider - no options", function () {
+
+            factoryMockExp.withArgs(consts.IMPLEMENTATIONS.WS);
 
             var server = new SocketServer({});
-
             server.start();
 
-            expect(getProviderStubStart).to.have.been.called();
-
+            //verifications
+            factoryMock.verify();
+            expect(providerStartSpy).to.have.been.called();
+            expect(providerOnNewConnectionSpy).to.have.been.called();
         });
 
-    });
+        it("should initialize provider - sockjs imp", function () {
+            var imp = consts.IMPLEMENTATIONS.SOCK_JS;
+            factoryMockExp.withArgs(imp);
 
-//    describe("change defaults")
+            var server = new SocketServer({implementation: imp});
+            server.start();
+
+            //verifications
+            factoryMock.verify();
+            expect(providerStartSpy).to.have.been.called();
+            expect(providerOnNewConnectionSpy).to.have.been.called();
+        });
+    });
 });

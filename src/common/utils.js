@@ -13,3 +13,8 @@ exports.assignPars = function(obj, key, val){
         obj[key] = val;
     }
 };
+
+exports.dynamicLoad = function(modulePath){
+
+    return require(modulePath);
+};

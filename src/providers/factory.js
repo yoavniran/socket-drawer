@@ -1,10 +1,9 @@
-/**
- * provider factory
- */
 var _ = require("lodash"),
+    utils = require("../common/utils"),
     consts = require("../common/consts");
 
 module.exports = (function () {
+    "use strict";
 
     function getProvider(implementation, options) {
 
@@ -23,7 +22,7 @@ module.exports = (function () {
             throw new TypeError("unknown implementation: " + implementation);
         }
 
-        return require("./" + implementation + "/Provider");
+        return utils.dynamicLoad("./" + implementation + "/Provider"); //require("./" + implementation + "/Provider");
     }
 
     return {
