@@ -116,6 +116,8 @@ var SocketsSession = (function () {
 
     function create(id, options, callback) {
 
+        options = options || {};
+
         var session = new SocketsSession(id);
 
         session.initialize(options, function (err) {
@@ -124,6 +126,8 @@ var SocketsSession = (function () {
 
             callback(err, s);
         });
+
+        return session;
     }
 
     return {
@@ -132,5 +136,3 @@ var SocketsSession = (function () {
 })();
 
 module.exports = SocketsSession;
-
-

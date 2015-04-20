@@ -10,16 +10,6 @@ var events = require("events"),
     DefaultSessionManager = require("./session/SessionManager"),
     socketsUtils = require("./common/utils");
 
-//todo: allow session functionality to be optional by providing a falsy session-manager property
-//todo: allow configuration to run request through socketwares even if handler is not found (default: false)
-//todo: add support for session resume and keep alive
-//todo: move helper functions to separate class
-//todo: change the wares and handlers fn signature to have less arguments
-//todo: add API for closing the socket server
-//todo: allow registering custom provider
-//todo: implement debug npm module for dev/troubleshooting
-//todo: add coverage bottom threshold for build to fail under
-
 var SocketsServer = (function () {
     "use strict";
 
@@ -30,7 +20,6 @@ var SocketsServer = (function () {
         CONNECTION_ID_KEY = "connection-id",
 
         defaults = {
-            //"sessionKeepAliveTime": 30000,
             "tokenSecretLength": 16,
             "externalSession": false,
             "tokenizeConnection": false,
@@ -43,7 +32,6 @@ var SocketsServer = (function () {
     /**
      * creates a new instance of Sockets Server on top of the sock JS Server
      *
-     * @param httpServer
      * @param options
      *
      *              httpServer - (mandatory)
@@ -56,7 +44,6 @@ var SocketsServer = (function () {
      *                         - broadcaster
      *                         - request-mapper
      *                         - request-parser
-     *                         - //////////////sessionKeepAliveTime (default: 30000 ms)
      *                         - tokenSecretLength (default: 16)
      *                         - tokenizeConnection (default: false)
      *                         - requestTokenKey    (default: token)
@@ -377,7 +364,7 @@ var SocketsServer = (function () {
     }
 
     function _checkRequest(data, session) {
-        //todo: support a custom checker function
+
         var valid = true;
 
         if (this.enabled("tokenizeConnection")) { //configured to check token on incoming requests
@@ -389,28 +376,33 @@ var SocketsServer = (function () {
                 var sessionChecked = session.get("session-security-checked"); //if not already checked
 
                 if (sessionChecked !== true) {
+                    valid = _isValidSessionToken.call(this, data, session);
 
-                    valid = false;
-
-                    var tokenKey = this.get("requestTokenKey");
-                    var token = data.metadata[tokenKey];
-
-                    if (token) {
-                        valid = session.isValid(token);
-
-                        if (valid) {
-                            session.set("session-security-checked", true);
-                        }
-                    }
-                    else {
-                        if (!_isSilentFail.call(this)) {
-                            throw new Error("SD.SocketServer - incoming request doesn't have token in metadata '" + tokenKey + "'");
-                        }
+                    if (valid) {
+                        session.set("session-security-checked", true);
                     }
                 }
                 else {
                     valid = true;
                 }
+            }
+        }
+
+        return valid;
+    }
+
+    function _isValidSessionToken(data, session){
+
+        var valid = false;
+        var tokenKey = this.get("requestTokenKey");
+        var token = data.metadata[tokenKey];
+
+        if (token) {
+            valid = session.isValid(token);
+        }
+        else {
+            if (!_isSilentFail.call(this)) {
+                throw new Error("SD.SocketServer - incoming request doesn't have token in metadata '" + tokenKey + "'");
             }
         }
 
@@ -460,7 +452,7 @@ var SocketsServer = (function () {
     }
 
     function _isSilentFail() {
-        return this.get("silentFail");
+        return this.enabled("silentFail");
     }
 
     function _onConnectionClose(connId) {

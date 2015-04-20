@@ -98,4 +98,18 @@ describe("SocketServer tests", function () {
             expect(providerOnNewConnectionSpy).to.have.been.called();
         });
     });
+
+    describe("test property bag", function(){
+
+        it("property should have assigned value", function(){
+
+            var server = new SocketServer({});
+
+            server.set("foo", "bar");
+
+            expect(server.get("foo")).to.equal("bar");
+        });
+
+
+    });
 });

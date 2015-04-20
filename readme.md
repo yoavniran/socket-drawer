@@ -1,6 +1,11 @@
 [![Coverage Status](https://coveralls.io/repos/yoavniran/socket-drawer/badge.svg)](https://coveralls.io/r/yoavniran/socket-drawer)
 [![Build Status](https://travis-ci.org/yoavniran/socket-drawer.svg?branch=master)](https://travis-ci.org/yoavniran/socket-drawer)
+[![Dependencies](https://david-dm.org/yoavniran/socket-drawer.svg)]((https://david-dm.org/yoavniran/socket-drawer.svg))
+[![Codacy Badge](https://www.codacy.com/project/badge/0ca7e94c18b74eb29ca1e4b319ac8d74)](https://www.codacy.com/public/yoavniran/socket-drawer)
+[![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
+## Websockets 
+Supports these  
 this is currently a  placeholder for a new project - Socket Drawer.
 
 The idea behind it is providing a basic framework (ala express)

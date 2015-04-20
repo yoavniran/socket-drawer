@@ -31,8 +31,9 @@ module.exports = function (grunt) {
 
         blanket: {        //output the instrumented files
             output: {
-                src: "./src/",
-                dest: "./output/coverage/src"
+                files: [
+                    {src: "./src/", dest: "./output/coverage/src"}
+                ]
             }
         },
 
@@ -81,10 +82,10 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask("test", ["clean", "mochaTest:test"]);
+    grunt.registerTask("test", ["mochaTest:test"]);
     grunt.registerTask("localcov", ["clean", "blanket", "copy:test", "mochaTest:htmlcov"]);
     grunt.registerTask("coverage", ["clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:htmlcov", "coveralls"]);
     grunt.registerTask("build", ["jshint", "test", "coverage", "mochaTest:travis-cov"]);
 
-    grunt.registerTask("default", ["jshint", "test"]);
+    grunt.registerTask("default", ["jshint", "test", "localcov"]);
 };
