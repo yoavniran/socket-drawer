@@ -1,9 +1,10 @@
-"use strict";
 var _ = require("lodash"),
+    debug = require("debug")("sdrawer:SessionManager"),
     uuid = require("node-uuid"),
     Session = require("./SocketsSession");
 
 var SessionManager = (function () {
+    "use strict";
 
     function SessionManager(options) {
 
@@ -20,6 +21,8 @@ var SessionManager = (function () {
             tokenSecretLength: this._config.tokenSecretLength
         };
 
+        debug("about to create a new session with id: " + id);
+
         Session.create(id, opts, _sessionCreated.bind(this, callback, id));
 
         return this;
@@ -29,7 +32,7 @@ var SessionManager = (function () {
 
         var session = this._sessions[id];
 
-        if (session && !session.isDestroyed()){
+        if (session && !session.isDestroyed()) {
             session.destroy();
         }
 
@@ -55,7 +58,12 @@ var SessionManager = (function () {
     function _sessionCreated(callback, id, err, session) {
 
         if (!err && session) {
+            debug("created new session");
             this._sessions[id] = session;
+        }
+        else {
+            session = null;
+            debug("failed to create session! - ", err);
         }
 
         callback(err, session);

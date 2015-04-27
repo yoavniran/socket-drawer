@@ -13,6 +13,8 @@ describe("tokenizer tests", function () {
 
     describe("validate token tests", function () {
 
+        var tokenizer;
+
         var cup = stirrer.grind({
             pars: {
                 length: 16,
@@ -22,14 +24,13 @@ describe("tokenizer tests", function () {
                 "../src/session/tokenizer"
             ],
             stubs: {
-                "mathCeil": [Math, "ceil"],
                 "hashUpdate": stirrer.EMPTY,
                 "hashDigest": stirrer.EMPTY
             },
             before: function () {
                 var stubs = this.stubs;
 
-                stubs.mathCeil.returns(0);
+                this.getStub("common/utils").getCryptoSaltLength.returns(0);
                 stubs.hashDigest.returns(this.pars.digestResult);
                 stubs.hashUpdate.returns({digest: stubs.hashDigest});
                 stubs.crypto.createHash.returns({update: stubs.hashUpdate});

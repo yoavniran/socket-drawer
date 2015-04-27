@@ -2,7 +2,8 @@
 
 var crypto = require("crypto"),
     debug = require("debug")("sdrawer:tokenizer"),
-    async = require("async");
+    async = require("async"),
+    utils = require("../common/utils");
 
 var token = (function () {
 
@@ -44,7 +45,7 @@ var token = (function () {
 
     function validate(secret, token, length) {
 
-        var actualSaltLength = ((Math.ceil(length / 3)) * 4);  //get the actual length of the salt calculated from the length requested
+        var actualSaltLength = utils.getCryptoSaltLength(length);  //get the actual length of the salt calculated from the length requested
 
         var salt = token.substr(0, actualSaltLength); //the plain salt is the first part of the token
 

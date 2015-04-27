@@ -1,20 +1,31 @@
-"use strict";
-
 var _ = require("lodash");
 
-exports.assignPars = function(obj, key, val){
+module.exports = (function () {
+    "use strict";
 
-    if (_.isObject(key) && !_.isArray(key)) {
-        _.each(key, function (v, k) {
-            obj[k] = v;
-        });
+    function assignPars(obj, key, val) {
+
+        if (_.isObject(key) && !_.isArray(key)) {
+            _.each(key, function (v, k) {
+                obj[k] = v;
+            });
+        }
+        else {
+            obj[key] = val;
+        }
     }
-    else {
-        obj[key] = val;
+
+    function dynamicLoad(modulePath) {
+        return require(modulePath);
     }
-};
 
-exports.dynamicLoad = function(modulePath){
+    function getCryptoSaltLength(orgLength) {
+        return ((Math.ceil(orgLength / 3)) * 4);
+    }
 
-    return require(modulePath);
-};
+    return {
+        assignPars: assignPars,
+        dynamicLoad: dynamicLoad,
+        getCryptoSaltLength: getCryptoSaltLength
+    };
+})();
