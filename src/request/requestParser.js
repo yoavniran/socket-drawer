@@ -1,12 +1,13 @@
-"use strict";
-var METHODS = require("../common/consts").HTTP_METHODS;
+var METHODS = require("../common/consts").HTTP_METHODS,
+    debug = require("debug")("sdrawer:requestParser");
 
 var requestParser = (function () {
+    "use strict";
 
     function parse(msg) {
 
         var data = (typeof(msg) === "string" ? JSON.parse(msg) :
-            typeof(msg.data) === "string" ? JSON.parse(msg.data) :  msg.data);
+            typeof(msg.data) === "string" ? JSON.parse(msg.data) : msg.data);
 
         var parsedData = {
             data: data.data || {},
@@ -15,7 +16,7 @@ var requestParser = (function () {
             method: data.method || METHODS.GET
         };
 
-        console.log("parsed object = ", parsedData);
+        debug("parsed object = ", parsedData);
 
         return parsedData;
     }

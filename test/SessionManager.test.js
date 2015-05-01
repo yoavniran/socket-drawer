@@ -12,7 +12,6 @@ describe("Session Manager tests", function () {
 
     var cup = stirrer.grind({
         name: "session manager test cup",
-        //restirForEach: true,
 
         pars: {
             sessionId: "1234-5678",
@@ -33,8 +32,6 @@ describe("Session Manager tests", function () {
             this.getStub("node-uuid/uuid").returns(this.pars.sessionId);
 
             var Session = this.getStub("session/SocketsSession");
-
-            //var err = this.pars.createFail ? this.pars.createErr : null;
 
             Session.create
                 .callsArgWith(2, null, {
@@ -69,10 +66,7 @@ describe("Session Manager tests", function () {
         });
     }, {
         afters: function (next) {
-
-            //expect(this.getStub("session/SocketsSession").create).to.have.been.called();
             expect(this.getStub("node-uuid/uuid")).to.have.been.called();
-
             next();
         }
     });
