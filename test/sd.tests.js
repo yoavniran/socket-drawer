@@ -9,5 +9,6 @@ require("./SocketSession.test");
 require("./SessionManager.test");
 
 require("./requestParser.test");
+require("./RequestMapper.test");
 
 require("./SocketServer.test");

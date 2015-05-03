@@ -1,4 +1,5 @@
 var _ = require("lodash"),
+    debug = require("debug")("sdrawer:RequestMapper"),
     pathToRegex = require("path-to-regexp"),
     METHODS = require("../common/consts").HTTP_METHODS;
 
@@ -15,18 +16,27 @@ var RequestMapper = (function () {
      * @param handler
      *          can be either an object with a map object or map function
      *          or the map object itself
+     *          see the addMapping documentation for more details
      */
     RequestMapper.prototype.addHandler = function (handler) {
 
         var map = _.isFunction(handler) ? handler : handler.map;
 
-        this.addMapping(map); //map is a function returning request mappings
+        this.addMapping(map); //map is a function returning request mappings or the mapping object
     };
 
     /**
      *
      * @param mapping
-     *      can be either a mapping object or  function that returns a mapping object
+     *      can be either a mapping object or function that returns a mapping object
+     *      mapping object is a key/val object.
+     *      in each pair,  the key is the path of the request to map with an optional method.
+     *      where method is one of: GET, POST, DELETE, PUT
+     *      the syntax for the path is:  "<[method]>[path]"
+     *      path is a string, pattern or regex. see https://www.npmjs.com/package/path-to-regexp for the options
+     *      that can be used as paths in more detail
+     *      if a method isnt provided GET is added by default
+     *      the value of the object is a function that will be called for a matching request
      */
     RequestMapper.prototype.addMapping = function (mapping) {
 
@@ -35,6 +45,16 @@ var RequestMapper = (function () {
         _.each(mapping, function (val, key) {
             _addMapping.call(this, key, val);
         }, this);
+    };
+
+    /**
+     * returns the stored handler mapping configuration for the given key.
+     *   the syntax for the key is:  "<[method]>[path]"
+     * @param key
+     * @returns {*}
+     */
+    RequestMapper.prototype.getHandlerConfig = function (key) {
+        return this._map[key];
     };
 
     RequestMapper.prototype.getRequestHandler = function (data) {
@@ -53,6 +73,7 @@ var RequestMapper = (function () {
             var requestMapping = _findMappingForResource.call(this, path);
 
             if (requestMapping) {
+                debug("found matching for handler for path: " + path);
                 handler = _getRequestHandler.call(this, requestMapping, path);
             }
         }
@@ -96,6 +117,8 @@ var RequestMapper = (function () {
 
         if (!requestMapping) { //no immediate, try each one based on the registered regex
 
+            debug("didnt find immediate match for path: " + path);
+
             requestMapping = _.find(this._map, function (val) {
                 return val.regex.test(path);
             });
@@ -124,7 +147,7 @@ var RequestMapper = (function () {
 
         var rgx = pathToRegex(path, keys);
 
-        this._map[rType] = {
+        this._map[path] = {
             handler: rHandler,
             regex: rgx,
             pathKeys: keys
@@ -140,7 +163,7 @@ var RequestMapper = (function () {
             method = matches[1];
         }
 
-        return  method;
+        return method;
     }
 
     function _getPathWithMethod(path, method) {

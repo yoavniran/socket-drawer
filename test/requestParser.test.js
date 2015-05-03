@@ -1,8 +1,8 @@
 var chai = require("chai"),
     expect = chai.expect,
     dirtyChai = require("dirty-chai"),
-    sinonChai = require("sinon-chai");
-//stirrer = require("mocha-stirrer");
+    sinonChai = require("sinon-chai"),
+    stirrer = require("mocha-stirrer");
 
 describe("request parser tests", function () {
     "use strict";
@@ -15,38 +15,37 @@ describe("request parser tests", function () {
         var methods = require("../src/common/consts").HTTP_METHODS;
         var requestParser = require("../src/request/requestParser");
 
-        it("should return all message data", function () {
+        var cup = stirrer.grind({
 
-            var msg = '{"data":{"a":"123","b":1234},"metadata":{"c":"aaa","d":123123},"resource":"/url/foo","method":"GET"}';
+            pars:{
+                msg : '{"data":{"a":"123","b":1234},"metadata":{"c":"aaa","d":123123},"resource":"/url/foo","method":"GET"}',
+                msgWithDataStr:{data: '{"data":{"a":"123","b":1234},"metadata":{"c":"aaa","d":123123},"resource":"/url/foo","method":"GET"}'}
+            },
+            beforeEach: function(){
+                this.pars.parsed = null;
+            },
+            afterEach: function(){
 
-            var parsed = requestParser.parse(msg);
+                var parsed = this.pars.parsed;
 
-            expect(parsed).to.exist();
-            expect(parsed.data).to.exist();
-            expect(parsed.metadata).to.exist();
+                expect(parsed).to.exist();
+                expect(parsed.data).to.exist();
+                expect(parsed.metadata).to.exist();
 
-            expect(parsed.resource).to.equal("/url/foo");
-            expect(parsed.method).to.equal(methods.GET);
+                expect(parsed.resource).to.equal("/url/foo");
+                expect(parsed.method).to.equal(methods.GET);
 
-            expect(parsed.data.b).to.equal(1234);
-            expect(parsed.metadata.c).to.equal("aaa");
+                expect(parsed.data.b).to.equal(1234);
+                expect(parsed.metadata.c).to.equal("aaa");
+            }
         });
 
+        cup.pour("should return all message data", function(){
+            this.pars.parsed = requestParser.parse(this.pars.msg);
+        });
 
-        it("should return all message data with data prop is string", function () {
-
-            var msg = {data: '{"data": {"a":"123","b":1234}, "resource":"/url/foo","method":"POST"}'};
-
-            var parsed = requestParser.parse(msg);
-
-            expect(parsed).to.exist();
-            expect(parsed.data).to.exist();
-            expect(parsed.resource).to.equal("/url/foo");
-            expect(parsed.method).to.equal(methods.POST);
-
-            expect(parsed.data.a).to.equal("123");
-            expect(parsed.data.b).to.equal(1234);
+        cup.pour("should return all message data with data prop is string", function(){
+            this.pars.parsed = requestParser.parse(this.pars.msgWithDataStr);
         });
     });
-
 });
