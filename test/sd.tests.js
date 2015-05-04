@@ -11,4 +11,5 @@ require("./SessionManager.test");
 require("./requestParser.test");
 require("./RequestMapper.test");
 
+require("./broadcaster.test");
 require("./SocketServer.test");

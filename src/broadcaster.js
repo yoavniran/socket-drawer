@@ -1,4 +1,3 @@
-
 var _ = require("lodash");
 
 var broadcaster = (function () {
@@ -24,7 +23,7 @@ var broadcaster = (function () {
 
     function _writeToConnection(msgStr, conn) {
 
-        if (conn.isWritable()) {
+        if (!_.isEmpty(msgStr) && conn.isWritable()) {
             conn.send(msgStr);
         }
     }
@@ -34,6 +33,5 @@ var broadcaster = (function () {
         publishToConnection: publishToConnection
     };
 })();
-
 
 module.exports = broadcaster;
