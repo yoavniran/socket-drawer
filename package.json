@@ -59,7 +59,7 @@
     "grunt-mocha-test": "^0.12.7",
     "mocha": "*",
     "mocha-lcov-reporter": "0.0.2",
-    "mocha-stirrer": "^0.1.11",
+    "mocha-stirrer": "^0.2.0",
     "sinon": "*",
     "sinon-chai": "^2.7.0",
     "time-grunt": "^1.1.0",

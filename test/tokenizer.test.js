@@ -13,8 +13,6 @@ describe("tokenizer tests", function () {
 
     describe("validate token tests", function () {
 
-        var tokenizer;
-
         var cup = stirrer.grind({
             pars: {
                 length: 16,

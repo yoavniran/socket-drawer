@@ -1,10 +1,9 @@
-"use strict";
-
 var _ = require("lodash"),
     tokenizer = require("./tokenizer"),
     socketsUtils = require("../common/utils");
 
 var SocketsSession = (function () {
+    "use strict";
 
     var idKey = "_id",
         createdTimeKey = "_created",
@@ -114,7 +113,8 @@ var SocketsSession = (function () {
         return this;
     };
 
-    function create(id, options, callback) {
+    //*************************** STATIC METHODS //*************************** STATIC METHODS
+    SocketsSession.create = function create(id, options, callback) {
 
         options = options || {};
 
@@ -128,11 +128,9 @@ var SocketsSession = (function () {
         });
 
         return session;
-    }
-
-    return {
-        create: create
     };
+
+    return SocketsSession;
 })();
 
 module.exports = SocketsSession;

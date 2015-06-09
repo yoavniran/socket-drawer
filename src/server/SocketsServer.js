@@ -1,23 +1,26 @@
 var events = require("events"),
     _ = require("lodash"),
-    consts = require("./common/consts"),
     util = require("util"),
+    debug = require("debug")("sdrawer:SocketServer"),
     async = require("async"),
-    providerFactory = require("./providers/factory"),
+    consts = require("../common/consts"),
+    socketsUtils = require("../common/utils"),
+    providerFactory = require("../providers/factory"),
     defaultBroadcaster = require("./broadcaster"),
-    defaultRequestParser = require("./request/requestParser"),
-    DefaultRequestMapper = require("./request/RequestMapper"),
-    DefaultSessionManager = require("./session/SessionManager"),
-    socketsUtils = require("./common/utils");
+    defaultRequestParser = require("../request/requestParser"),
+    DefaultRequestMapper = require("../request/RequestMapper"),
+    DefaultSessionManager = require("../session/SessionManager"),
+    serverHelperFunctions = require("./serverHelperFunctions");
+
+//todo: stop listening to incoming connections when server stops
+//todo: stop provider when server stops
+//todo: add started validation to server operations
+//todo: consider using custom Error type(s)
 
 var SocketsServer = (function () {
     "use strict";
 
-    var SESSION_MANAGER_KEY = "session-manager",
-        BROADCASTER_KEY = "broadcaster",
-        REQUEST_MAPPER_KEY = "request-mapper",
-        REQUEST_PARSER_KEY = "request-parser",
-        CONNECTION_ID_KEY = "connection-id",
+    var KEYS = consts.SERVER_KEYS,
 
         defaults = {
             "tokenSecretLength": 16,
@@ -25,8 +28,8 @@ var SocketsServer = (function () {
             "tokenizeConnection": false,
             "requestTokenKey": "token",
             "checkTokenOnMethods": null,
-            "silentFail": false,
-            "debug": false
+            "session-identifier-key": "connection-id",
+            "silentFail": false
         };
 
     /**
@@ -44,13 +47,12 @@ var SocketsServer = (function () {
      *                         - broadcaster
      *                         - request-mapper
      *                         - request-parser
+     *                         - session-identifier-key (default: "connection-id") - allows to determine the key session manager or session use to store their id
      *                         - tokenSecretLength (default: 16)
      *                         - tokenizeConnection (default: false)
      *                         - requestTokenKey    (default: token)
      *                         - checkTokenOnMethods, Array (default: null = check on all methods)
      *                         - externalSession (default: false)
-     *                         - debug (default: false) - make the server log stuff to the console
-     *
      *                         - dataEventName - used only by socketio connector to allow its client to emit events with a different name. default is "message"
      * @constructor
      */
@@ -58,12 +60,14 @@ var SocketsServer = (function () {
 
         events.EventEmitter.call(this);
 
+        options = options || {};
         options.handlers = options.handlers || [];
         options.config = _.extend({}, defaults, options.config); //override defaults from the config received
         options.implementation = options.implementation || consts.IMPLEMENTATIONS.WS; //default to WS
 
-        this._options = options;
-        this._propertyBag = Object.create(null); //"clean" set - not even inheriting from Object
+        this._running = false;
+        this._options = options;  //todo: clone !!!
+        this._propertyBag = Object.create(null);
         this._socketsProvider = null;
         this._socketsWares = [];
         this._connections = {};
@@ -78,7 +82,11 @@ var SocketsServer = (function () {
     };
 
     SocketsServer.prototype.stop = function () {
-        throw new Error("not implemented");
+        _stopServer.call(this);
+    };
+
+    SocketsServer.prototype.isRunning = function () {
+        return this._running;
     };
 
     /**
@@ -93,6 +101,8 @@ var SocketsServer = (function () {
      */
     SocketsServer.prototype.use = function (socketsware, name, options) {
 
+        debug("use - registering socket ware(s)");
+
         var wares = socketsware;
 
         if (_.isFunction(socketsware)) {
@@ -104,7 +114,7 @@ var SocketsServer = (function () {
         _.each(wares, function (item) {
 
             if (_.isFunction(item)) {
-                item = {handler: item};
+                item = {handler: item, name: item.swname};
             }
 
             item.name = item.name || _.uniqueId("sw");
@@ -155,7 +165,7 @@ var SocketsServer = (function () {
      */
     SocketsServer.prototype.addRequestHandling = function (handler) {
 
-        var requestMapper = this.get(REQUEST_MAPPER_KEY);
+        var requestMapper = this.get(KEYS.REQUEST_MAPPER_KEY);
 
         if (!_.isArray(handler)) {
             handler = [handler];
@@ -168,32 +178,27 @@ var SocketsServer = (function () {
 
     SocketsServer.prototype.publish = function (session, resource, data, isError, clientId) {
 
-        var connId = session.get(CONNECTION_ID_KEY);
+        var connId = session.get(this.get(KEYS.CONNECTION_ID_KEY));
 
         this.publishToConnection(connId, resource, data, isError, clientId);
     };
 
     SocketsServer.prototype.publishToConnection = function (connId, resource, data, isError, clientId) {
+        _publish.call(this, connId, resource, data, isError, clientId);
+    };
 
-        var broadcaster = this.get(BROADCASTER_KEY);
-        var conn = this._connections[connId];
-
-        if (conn) {
-            _publish.call(this, broadcaster, conn, resource, data, isError, clientId);
-        }
-        else {
-            throw new Error("SD.SocketsServer - no connection found for id: " + connId);
-        }
+    SocketsServer.prototype.getConnection = function (connId) {
+        return this._connections[connId];
     };
 
     function _initialize(options) {
 
         this.set(options.config); //use everything in config as properties
 
-        this.set(REQUEST_PARSER_KEY, (options[REQUEST_PARSER_KEY] || defaultRequestParser));
-        this.set(BROADCASTER_KEY, (options[BROADCASTER_KEY] || defaultBroadcaster));
-        this.set(REQUEST_MAPPER_KEY, (options[REQUEST_MAPPER_KEY] || new DefaultRequestMapper(_.clone(options.config))));
-        this.set(SESSION_MANAGER_KEY, (options[SESSION_MANAGER_KEY] || new DefaultSessionManager(_.clone(options.config))));
+        this.set(KEYS.REQUEST_PARSER_KEY, (options[KEYS.REQUEST_PARSER_KEY] || defaultRequestParser));
+        this.set(KEYS.BROADCASTER_KEY, (options[KEYS.BROADCASTER_KEY] || defaultBroadcaster));
+        this.set(KEYS.REQUEST_MAPPER_KEY, (options[KEYS.REQUEST_MAPPER_KEY] || new DefaultRequestMapper(_.clone(options.config))));
+        this.set(KEYS.SESSION_MANAGER_KEY, (options[KEYS.SESSION_MANAGER_KEY] || new DefaultSessionManager(_.clone(options.config))));
 
         _addInitHandlers.call(this, options.handlers);
     }
@@ -202,31 +207,51 @@ var SocketsServer = (function () {
 
         if (handlers) {
 
-            if (_.isArray(handlers)) {
-                this.addRequestHandling(handlers);
+            if (!_.isArray(handlers)) {
+                handlers = _.map(handlers, function (h) {
+                    return h;
+                });
             }
-            else {
-                _.each(handlers, function (h) {
-                    this.addRequestHandling(h);
-                }, this);
-            }
+
+            this.addRequestHandling(handlers);
         }
     }
 
     function _startServer(options) {
 
-        _log.call(this, "SD.SocketsServer - websockets implementation is: " + options.implementation);
-        this._socketsProvider = providerFactory.getProvider(options.implementation, options);
-        this._socketsProvider.start(options);
-        this._socketsProvider.onNewConnection(_onIncomingConnection.bind(this), options);
+        if (!this.isRunning()) {
+            debug("starting server. websockets implementation is: " + options.implementation);
+            this._socketsProvider = providerFactory.getProvider(options.implementation, options);
+            this._socketsProvider.start(options);
+            this._socketsProvider.onNewConnection(_onIncomingConnection.bind(this), options);
+
+            this._running = true;
+        }
+        else {
+            debug("start server called when server is already running");
+        }
+    }
+
+    function _stopServer() {
+
+        if (this.isRunning()) {
+            //todo: implement stopping procedures
+
+            this._socketsProvider.stop();
+
+        }
+
+        this._running = false;
+
+        throw new Error("not implemented");
     }
 
     function _onIncomingConnection(conn) {
 
-        var sessionManager = this.get(SESSION_MANAGER_KEY);
+        var sessionManager = this.get(KEYS.SESSION_MANAGER_KEY);
         var connId = conn.getId();
 
-        _log.call(this, "SD.SocketsServer - incoming connection: " + connId);
+        debug("incoming connection: " + connId);
 
         this._connections[connId] = conn;
 
@@ -246,23 +271,23 @@ var SocketsServer = (function () {
             throw new Error("SocketsServer - Failed to create session for incoming connection");
         }
 
-        session.set(CONNECTION_ID_KEY, connId);
+        session.set(this.get(KEYS.CONNECTION_ID_KEY), connId);
 
         this.emit("sockets:session:create", session);
     }
 
     function _onIncomingData(connId, msg) {
 
-        setImmediate(function () {  //defer handling of incoming data, to allow creation of session to complete
+        socketsUtils.setImmediate(function () {  //defer handling of incoming data, to allow creation of session to complete
 
-            _log.call(this, "SD.SocketsServer - incoming data on connection: " + connId, msg);
+            debug("incoming data on connection: " + connId, msg);
 
             this.emit("incoming:msg", {connId: connId, message: msg});
 
-            var requestParser = this.get(REQUEST_PARSER_KEY);
-            var sessionManager = this.get(SESSION_MANAGER_KEY);
+            var requestParser = this.get(KEYS.REQUEST_PARSER_KEY);
+            var sessionManager = this.get(KEYS.SESSION_MANAGER_KEY);
 
-            var session = sessionManager.find(CONNECTION_ID_KEY, connId);
+            var session = sessionManager.find(this.get(KEYS.CONNECTION_ID_KEY), connId);
 
             if (!session && !this.enabled("externalSession")) {   //if session was supposed to be created internally on connection
                 throw new Error("SD.SocketsServer - incoming data on session-less connection");
@@ -276,9 +301,9 @@ var SocketsServer = (function () {
 
     function _processRequest(connId, session, data) {
 
-        var requestMapper = this.get(REQUEST_MAPPER_KEY);
-        var sessionManager = this.get(SESSION_MANAGER_KEY);
-        var helperFunctions = _getHelperFunctions.call(this, connId, data);
+        var requestMapper = this.get(KEYS.REQUEST_MAPPER_KEY);
+        var sessionManager = this.get(KEYS.SESSION_MANAGER_KEY);
+        var helperFunctions = _getHelperFunctions.call(this, connId, data);   //todo: move helper fns to separate helper
         var handlerData = requestMapper.getRequestHandler(data);
 
         if (handlerData) {    //without a handler we dont bother with the socketwares
@@ -291,30 +316,11 @@ var SocketsServer = (function () {
                         throw sdError;
                     }
 
-                    session = session || sessionManager.find(CONNECTION_ID_KEY, connId); //its possible that a socketware attached a session to the connection so we need to use it
-
-                    if (_checkRequest.call(this, data, session)) { //ensure we have valid token from client if configured to check
-
-                        handlerData.handler(
-                            data.resource,                                      //request resource
-                            data.data,                                          //request data
-                            data.metadata,                                      //request metadata
-                            data.method,                                        //request method
-                            {keys: handlerData.keys, path: handlerData.path},   //path data
-                            session,                                            //session
-                            helperFunctions.publish                             //publish helper function
-                        );
-                    }
-                    else {
-                        if (!_isSilentFail.call(this)) {
-                            throw new Error("SD.SocketServer - request failed token check");
-                        }
-                    }
-
+                    _runRequestHandling.call(this, connId, data, session, helperFunctions, sessionManager, handlerData);
                 }.bind(this));
         }
         else {
-            _log.call(this, "SD.SocketServer - _checkRequest - no handler found for request - ", data);
+            debug("_checkRequest - no handler found for request - ", data);
 
             if (!_isSilentFail.call(this)) {
                 throw new Error("SD.SocketServer - handler not found for incoming request");
@@ -322,45 +328,47 @@ var SocketsServer = (function () {
         }
     }
 
+    function _runRequestHandling(connId, data, session, helperFunctions, sessionManager, handlerData) {
+
+        session = session || sessionManager.find(this.get(KEYS.CONNECTION_ID_KEY), connId); //its possible that a socketware attached a session to the connection so we need to use it
+
+        if (_checkRequest.call(this, data, session)) { //ensure we have valid token from client if configured to check
+
+            /* todo: refactor parameters structure
+             {
+             data,
+             metadata
+             resource,
+             method,
+             pathInfo: {
+             keys,
+             path
+             },
+             session,
+             helpers.publish
+             },
+             */
+
+            handlerData.handler(
+                data.resource,                                      //request resource
+                data.data,                                          //request data
+                data.metadata,                                      //request metadata
+                data.method,                                        //request method
+                {keys: handlerData.keys, path: handlerData.path},   //path data
+                session,                                            //session
+                helperFunctions.publish                             //publish helper function
+            );
+        }
+        else {
+            if (!_isSilentFail.call(this)) {
+                throw new Error("SD.SocketServer - request failed token check");
+            }
+        }
+    }
+
     function _getHelperFunctions(connId, data) {
 
-        var sessionManager = this.get(SESSION_MANAGER_KEY);
-        var clientId = (data && data.metadata && data.metadata.clientRequestId) ? data.metadata.clientRequestId : undefined;
-
-        function publish(publishData, isError, resource) {
-            resource = resource || data.resource;  //replying on the same resource as in the request
-            this.publishToConnection(connId, resource, publishData, isError, clientId);
-        }
-
-        function attachSession(key, val) {
-
-            var session = sessionManager.find(key, val);
-
-            if (session) {
-
-                var sessionConnId = session.get(CONNECTION_ID_KEY);
-
-                if (!sessionConnId || sessionConnId === connId) {
-                    session.set(CONNECTION_ID_KEY, connId); //match a previously created session with the sockets connection
-                }
-                else {
-                    throw new Error("SocketsServer - attachSession - cant attach session, its already attached to different connection");
-                }
-            }
-            else {
-                throw new Error("SocketsServer - attachSession - couldnt find session object for key=" + key + ", val=" + val);
-            }
-        }
-
-        function get(key) {
-            return this.get(key);
-        }
-
-        return {
-            publish: publish.bind(this),
-            attachSession: attachSession,
-            get: get.bind(this)
-        };
+        return serverHelperFunctions.getFunctions(this, connId, data);
     }
 
     function _checkRequest(data, session) {
@@ -368,6 +376,10 @@ var SocketsServer = (function () {
         var valid = true;
 
         if (this.enabled("tokenizeConnection")) { //configured to check token on incoming requests
+
+            if (!session) {
+                throw new Error("SD.SocketServer - cannot check request using token as session isnt provided");
+            }
 
             var checkOnMethods = this.get("checkTokenOnMethods"); //by default check all types of requests
 
@@ -391,7 +403,7 @@ var SocketsServer = (function () {
         return valid;
     }
 
-    function _isValidSessionToken(data, session){
+    function _isValidSessionToken(data, session) {
 
         var valid = false;
         var tokenKey = this.get("requestTokenKey");
@@ -409,26 +421,22 @@ var SocketsServer = (function () {
         return valid;
     }
 
+    function _validateIsRunning() {
+
+        if (!this.isRunning()) {
+            throw new Error("SD.SocketsServer - server isn't running, operation not allowed");
+        }
+    }
+
     function _runRequestThroughWares(connId, data, handlerData, session, helperFunctions, callback) {
 
-        var sessionManager = this.get(SESSION_MANAGER_KEY);
+        var sessionManager = this.get(KEYS.SESSION_MANAGER_KEY);
 
-        var wareFns = _.map(this._socketsWares, function (ware) {
-            return function (next) {
-
-                session = session || sessionManager.find(CONNECTION_ID_KEY, connId);  //its possible that a socketware attached a sesionn to the connection
-
-                ware.handler(
-                    data.resource,
-                    data.data,
-                    data.metadata,
-                    data.method,
-                    {keys: handlerData.keys, path: handlerData.path},
-                    session,
-                    helperFunctions,
-                    next
-                );
-            };
+        var wareFns = _getWaresCalls.call(this, connId, this._socketsWares, sessionManager, {
+            data: data,
+            handlerData: handlerData,
+            session: session,
+            helperFunctions: helperFunctions
         });
 
         async.series(wareFns, function (err) {
@@ -436,7 +444,57 @@ var SocketsServer = (function () {
         });
     }
 
-    function _publish(broadcaster, conn, resource, data, isError, clientId) {
+    function _getWaresCalls(connId, wares, sessionManager, reqData) {
+
+        var connIdKey = this.get(KEYS.CONNECTION_ID_KEY);
+        var session = reqData.session,
+            data = reqData.data;
+
+        return _.map(wares, function (ware) {
+            return function (next) {
+
+                session = session || sessionManager.find(connIdKey, connId);  //its possible that a socketware attached a sesionn to the connection
+
+                /* todo: refactor parameters structure into a single object instead of sep pars
+                 {
+                 data,
+                 metadata
+                 resource,
+                 method,
+                 pathInfo: {
+                 keys,
+                 path
+                 },
+                 session,
+                 helpers
+                 },
+                 next
+                 */
+
+                ware.handler(
+                    data.resource,
+                    data.data,
+                    data.metadata,
+                    data.method,
+                    {keys: reqData.handlerData.keys, path: reqData.handlerData.path},
+                    session,
+                    reqData.helperFunctions,
+                    next
+                );
+            };
+        });
+    }
+
+    function _publish(connId, resource, data, isError, clientId) {
+
+        _validateIsRunning.call(this);
+
+        var broadcaster = this.get(KEYS.BROADCASTER_KEY);
+        var conn = this.getConnection(connId);
+
+        if (!conn) {
+            throw new Error("SD.SocketsServer - no connection found for id: " + connId);
+        }
 
         isError = !!isError;
 
@@ -447,7 +505,7 @@ var SocketsServer = (function () {
             clientId: clientId
         };
 
-        _log.call(this, "about to publish msg to connection: ", msg);
+        debug("about to publish msg to connection: ", msg);
         broadcaster.publishToConnection(msg, conn);
     }
 
@@ -457,12 +515,12 @@ var SocketsServer = (function () {
 
     function _onConnectionClose(connId) {
 
-        setImmediate(function () {  //defer handling of conn closing, to allow creation of session to complete
+        socketsUtils.setImmediate(function () {  //defer handling of conn closing, to allow creation of session to complete
 
             delete this._connections[connId];
 
-            var sessionManager = this.get(SESSION_MANAGER_KEY);
-            var session = sessionManager.find(CONNECTION_ID_KEY, connId);
+            var sessionManager = this.get(KEYS.SESSION_MANAGER_KEY);
+            var session = sessionManager.find(this.get(KEYS.CONNECTION_ID_KEY), connId);
 
             if (session) {
                 this.emit("session:destroying", session);
@@ -471,11 +529,7 @@ var SocketsServer = (function () {
         }.bind(this));
     }
 
-    function _log() {
-        if (this.enabled("debug")) {
-            console.log.apply(console, arguments); //todo: replace !!!!!
-        }
-    }
+    //SocketsServer.DEFAULT_PROP_NAMES = //todo: expose the names of the default properties
 
     return SocketsServer;
 })();

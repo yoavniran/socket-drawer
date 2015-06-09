@@ -1,37 +1,42 @@
-"use strict";
 var util = require("util"),
     WebSocketServer = require("ws").Server,
     ProviderBase = require("../ProviderBase"),
     Connection = require("./Connection");
 
-var WSProvider = function(options){
+var WSProvider = (function(){
+    "use strict";
 
-    ProviderBase.call(this, options);
+    var WSProvider = function(options){
 
-    this._server = null;
-};
+        ProviderBase.call(this, options);
 
-util.inherits(WSProvider, ProviderBase);  //inherit Event Emitter methods
+        this._server = null;
+    };
 
-WSProvider.prototype.start = function(options){
+    util.inherits(WSProvider, ProviderBase);  //inherit Event Emitter methods
 
-    this._server = new WebSocketServer({
-        server: options.httpServer,
-        path: options.path
-    });
+    WSProvider.prototype.start = function(options){
 
-    return this;
-};
+        this._server = new WebSocketServer({
+            server: options.httpServer,
+            path: options.path
+        });
 
-WSProvider.prototype.onNewConnection = function (cb, options) {
+        return this;
+    };
 
-    this._server.on("connection", function(client){
-        var connection = new Connection(client, options);
-        cb(connection);
-    });
+    WSProvider.prototype.onNewConnection = function (cb, options) {
 
-    return this;
-};
+        this._server.on("connection", function(client){
+            var connection = new Connection(client, options);
+            cb(connection);
+        });
+
+        return this;
+    };
+
+    return WSProvider;
+})();
 
 module.exports = WSProvider;
 

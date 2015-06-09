@@ -3,7 +3,7 @@ var chai = require("chai"),
     dirtyChai = require("dirty-chai"),
     sinonChai = require("sinon-chai"),
     stirrer = require("mocha-stirrer"),
-    broadcaster = require("../src/broadcaster");
+    broadcaster = require("../src/server/broadcaster");
 
 describe("broadcaster tests", function () {
     "use strict";

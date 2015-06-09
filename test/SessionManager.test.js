@@ -18,7 +18,7 @@ describe("Session Manager tests", function () {
             createErr: "oh no!"
         },
 
-        requires: [{path: "../src/session/SessionManager", options: {dontStub: ["lodash", "debug"]}}],
+        requires: [{path: "../src/session/SessionManager"}], //, options: {dontStub: ["lodash", "debug"]}}],
 
         stubs: {
             sessionGet: stirrer.EMPTY,
@@ -29,7 +29,7 @@ describe("Session Manager tests", function () {
 
         before: function () {
 
-            this.getStub("node-uuid/uuid").returns(this.pars.sessionId);
+            this.getStub("node-uuid").returns(this.pars.sessionId);
 
             var Session = this.getStub("session/SocketsSession");
 
@@ -66,7 +66,7 @@ describe("Session Manager tests", function () {
         });
     }, {
         afters: function (next) {
-            expect(this.getStub("node-uuid/uuid")).to.have.been.called();
+            expect(this.getStub("node-uuid")).to.have.been.called();
             next();
         }
     });

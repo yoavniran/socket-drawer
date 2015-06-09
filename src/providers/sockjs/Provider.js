@@ -1,45 +1,51 @@
-"use strict";
 var ProviderBase = require("../ProviderBase"),
     Connection = require("./Connection"),
     util = require("util"),
     sockjs = require("sockjs");
 
-var SockJSProvider = function (options) {
+var SockJSProvider = (function () {
+    "use strict";
 
-    ProviderBase.call(this, options);
+    var SockJSProvider = function (options) {
 
-    this._server = null;
-};
+        ProviderBase.call(this, options);
 
-util.inherits(SockJSProvider, ProviderBase);
+        this._server = null;
+    };
 
-/**
- *
- * @param options
- *          - httpServer
- *          - sockUrl
- *          - path
- */
-SockJSProvider.prototype.start = function (options) {
+    util.inherits(SockJSProvider, ProviderBase);
 
-    this._server = sockjs.createServer({
-        sockjs_url: options.sockUrl,
-        prefix: options.path
-    });
+    /**
+     *
+     * @param options
+     *          - httpServer
+     *          - sockUrl
+     *          - path
+     */
+    SockJSProvider.prototype.start = function (options) {
 
-    this._server.installHandlers(options.httpServer);
+        this._server = sockjs.createServer({
+            sockjs_url: options.sockUrl,
+            prefix: options.path
+        });
 
-    return this;
-};
+        this._server.installHandlers(options.httpServer);
 
-SockJSProvider.prototype.onNewConnection = function (cb, options) {
+        return this;
+    };
 
-    this._server.on("connection", function (sjConn) {
-        var connection = new Connection(sjConn, options);
-        cb(connection);
-    });
+    SockJSProvider.prototype.onNewConnection = function (cb, options) {
 
-    return this;
-};
+        this._server.on("connection", function (sjConn) {
+            var connection = new Connection(sjConn, options);
+            cb(connection);
+        });
+
+        return this;
+    };
+
+    return SockJSProvider;
+})();
+
 
 module.exports = SockJSProvider;

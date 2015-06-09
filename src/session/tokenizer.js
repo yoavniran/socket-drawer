@@ -1,11 +1,10 @@
-"use strict";
-
 var crypto = require("crypto"),
     debug = require("debug")("sdrawer:tokenizer"),
     async = require("async"),
     utils = require("../common/utils");
 
 var token = (function () {
+    "use strict";
 
     function generate(length, secret, callback) {
 

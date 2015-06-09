@@ -12,7 +12,7 @@ describe("Socket Session tests", function () {
 
     var cup = stirrer.grind({
         name: "socket session test cup",
-        requires: [{path: "../src/session/SocketsSession", options: {dontStub: ["../common/utils"]}}],
+        requires: [{path: "../src/session/SocketsSession", options: {dontMock: ["../common/utils"]}}],
         pars: {
             tokenSecretLength: 16,
             token: "abc",
@@ -157,7 +157,7 @@ describe("Socket Session tests", function () {
 
         var Session = this.required["../src/session/SocketsSession"];
 
-        var s = Session.create(this.pars.sessionId, {
+        Session.create(this.pars.sessionId, {
             tokenizeConnection: true
         }, function (err, session) {
 

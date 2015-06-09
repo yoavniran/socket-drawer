@@ -23,9 +23,14 @@ module.exports = (function () {
         return ((Math.ceil(orgLength / 3)) * 4);
     }
 
+    function setImmediateProxy(){
+        return setImmediate.apply(global, arguments);
+    }
+
     return {
         assignPars: assignPars,
         dynamicLoad: dynamicLoad,
-        getCryptoSaltLength: getCryptoSaltLength
+        getCryptoSaltLength: getCryptoSaltLength,
+        setImmediate: setImmediateProxy
     };
 })();

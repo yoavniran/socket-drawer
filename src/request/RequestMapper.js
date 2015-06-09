@@ -6,6 +6,7 @@ var _ = require("lodash"),
 var METHOD_IN_TYPE_RGX = /^<(\w+)>\X*/;
 
 var RequestMapper = (function () {
+    "use strict";
 
     function RequestMapper() {
         this._map = {};

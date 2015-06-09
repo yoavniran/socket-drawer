@@ -1,44 +1,49 @@
-"use strict";
 var ConnectionBase = require("../ConnectionBase"),
     util = require("util");
 
-function SockJSConnection(conn, options) {
+var SockJSConnection = (function(){
+    "use strict";
 
-    ConnectionBase.call(this, options);
+    function SockJSConnection(conn, options) {
 
-    this._conn = conn;
-}
+        ConnectionBase.call(this, options);
 
-util.inherits(SockJSConnection, ConnectionBase);
+        this._conn = conn;
+    }
 
-SockJSConnection.prototype.initialize = function (options) {
+    util.inherits(SockJSConnection, ConnectionBase);
 
-};
+    SockJSConnection.prototype.initialize = function () {
 
-SockJSConnection.prototype.getId = function () {
-    return this._conn.id;
-};
+    };
 
-SockJSConnection.prototype.send = function (msg) {
-    this._conn.emit("data", msg);
-    return this;
-};
+    SockJSConnection.prototype.getId = function () {
+        return this._conn.id;
+    };
 
-SockJSConnection.prototype.onData = function (cb) {
+    SockJSConnection.prototype.send = function (msg) {
+        this._conn.emit("data", msg);
+        return this;
+    };
 
-    this._conn.on("data", cb);
-    return this;
-};
+    SockJSConnection.prototype.onData = function (cb) {
 
-SockJSConnection.prototype.onClose = function (cb) {
+        this._conn.on("data", cb);
+        return this;
+    };
 
-    this._conn.on("close", cb);
-    return this;
-};
+    SockJSConnection.prototype.onClose = function (cb) {
 
-SockJSConnection.prototype.isWritable = function () {
-    return (this._conn.readyState === 1 && this._conn.writable);
-};
+        this._conn.on("close", cb);
+        return this;
+    };
+
+    SockJSConnection.prototype.isWritable = function () {
+        return (this._conn.readyState === 1 && this._conn.writable);
+    };
+
+    return SockJSConnection;
+})();
 
 module.exports = SockJSConnection;
 

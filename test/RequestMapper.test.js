@@ -24,14 +24,14 @@ describe("request mapper tests", function () {
                 }
             },
             before: function () {
-                this.getStub("path-to-regexp/index").returns(this.pars.urlAsRgx);
+                this.getStub("path-to-regexp").returns(this.pars.urlAsRgx);
             },
             afterEach: function () {
-                expect(this.getStub("path-to-regexp/index")).to.have.been.calledWith(this.pars.mapKey);
+                expect(this.getStub("path-to-regexp")).to.have.been.calledWith(this.pars.mapKey);
             },
             requires: [{
-                path: "../src/request/RequestMapper",
-                options: {dontStub: ["lodash", "../common/consts", "debug"]}
+                path: "../src/request/RequestMapper"
+                //options: {dontStub: ["lodash", "../common/consts", "debug"]}
             }]
         });
 
@@ -44,8 +44,6 @@ describe("request mapper tests", function () {
                     "/api/url/:id": this.pars.mapFn
                 }
             });
-
-            console.log("mappings::: ", mapper._map);
 
             var config = mapper.getHandlerConfig(this.pars.mapKey);
 
@@ -82,7 +80,7 @@ describe("request mapper tests", function () {
             mapper.addHandler(function () {
                 return {
                     "/api/url/:id": mapFn
-                }
+                };
             });
 
             var config = mapper.getHandlerConfig(this.pars.mapKey);
@@ -100,7 +98,7 @@ describe("request mapper tests", function () {
             mapper.addMapping(function () {
                 return {
                     "/api/url/:id": mapFn
-                }
+                };
             });
 
             var config = mapper.getHandlerConfig(this.pars.mapKey);
@@ -146,8 +144,8 @@ describe("request mapper tests", function () {
             },
             {
                 afters: function (next) {
-                    expect(this.getStub("path-to-regexp/index")).to.have.been.calledWith(this.pars.mapKey);
-                    expect(this.getStub("path-to-regexp/index")).to.have.been.calledWith(this.pars.mapKeyPOST);
+                    expect(this.getStub("path-to-regexp")).to.have.been.calledWith(this.pars.mapKey);
+                    expect(this.getStub("path-to-regexp")).to.have.been.calledWith(this.pars.mapKeyPOST);
                     next();
                 }
             });
@@ -170,11 +168,11 @@ describe("request mapper tests", function () {
                 pathToRgxTest: stirrer.EMPTY
             },
             requires: [{
-                path: "../src/request/RequestMapper",
-                options: {dontStub: ["lodash", "../common/consts", "debug"]}
+                path: "../src/request/RequestMapper"
+                //options: {dontStub: ["lodash", "../common/consts", "debug"]}
             }],
             before: function () {
-                this.getStub("path-to-regexp/index").returns({test: this.stubs.pathToRgxTest});
+                this.getStub("path-to-regexp").returns({test: this.stubs.pathToRgxTest});
             }
         });
 

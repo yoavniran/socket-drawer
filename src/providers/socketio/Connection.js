@@ -1,42 +1,46 @@
-"use strict";
 var ConnectionBase = require("../ConnectionBase"),
     util = require("util");
 
-function SocketIOConnection(conn, options) {
+var SocketIOConnection  = (function(){
+    "use strict";
 
-    ConnectionBase.call(this, options);
+    function SocketIOConnection(conn, options) {
 
-    this._conn = conn;
-    this._listenOnEventName = options.dataEventName || "message";
-}
+        ConnectionBase.call(this, options);
 
-util.inherits(SocketIOConnection, ConnectionBase);
+        this._conn = conn;
+        this._listenOnEventName = options.dataEventName || "message";
+    }
 
-SocketIOConnection.prototype.initialize = function (options) {
-};
+    util.inherits(SocketIOConnection, ConnectionBase);
 
-SocketIOConnection.prototype.getId = function () {
-    return this._conn.id;
-};
+    SocketIOConnection.prototype.initialize = function () {
+    };
 
-SocketIOConnection.prototype.send = function (msg) {
-    this._conn.send(msg);
-    return this;
-};
+    SocketIOConnection.prototype.getId = function () {
+        return this._conn.id;
+    };
 
-SocketIOConnection.prototype.onData = function (cb) {
-    this._conn.on(this._listenOnEventName, cb);
-    return this;
-};
+    SocketIOConnection.prototype.send = function (msg) {
+        this._conn.send(msg);
+        return this;
+    };
 
-SocketIOConnection.prototype.onClose = function (cb) {
+    SocketIOConnection.prototype.onData = function (cb) {
+        this._conn.on(this._listenOnEventName, cb);
+        return this;
+    };
 
-    this._conn.on("disconnect", cb);
-    return this;
-};
+    SocketIOConnection.prototype.onClose = function (cb) {
+        this._conn.on("disconnect", cb);
+        return this;
+    };
 
-SocketIOConnection.prototype.isWritable = function () {
-    return (this._conn.conn.readyState === "open");
-};
+    SocketIOConnection.prototype.isWritable = function () {
+        return (this._conn.conn.readyState === "open");
+    };
+
+    return SocketIOConnection;
+})();
 
 module.exports = SocketIOConnection;
