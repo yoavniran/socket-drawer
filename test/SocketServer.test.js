@@ -348,7 +348,7 @@ describe("SocketsServer tests", function () {
                 this.getStub("common/utils").setImmediate.callsArg(0);
                 this.stubs.connGetId.returns(this.pars.connId);
 
-                var conn = {
+                var conn  = this.pars.conn =  {
                     getId: this.stubs.connGetId,
                     onData: this.stubs.connOnData,
                     onClose: this.stubs.connOnClose
@@ -394,6 +394,7 @@ describe("SocketsServer tests", function () {
             var server = getNewServer(this);
             server.start();
 
+            expect(server.getConnection(this.pars.connId)).to.equal(this.pars.conn);
         }, {
             befores: function (next) {
                 this.stubs.connOnData.resetBehavior(); //dont go into the full flow of connection receiving data
@@ -1100,10 +1101,91 @@ describe("SocketsServer tests", function () {
     describe("test stopping the server", function () {
 
         var cup = stirrer.grind({
+            restirForEach: true,
 
+            requires: [{
+                path: "../src/server/SocketsServer", options: {alias: "server"}
+            }],
+            stubs: {
+                providerOnNewConn: stirrer.EMPTY
+            },
+            spies: {
+                providerStart: stirrer.EMPTY,
+                providerStop: stirrer.EMPTY,
+                connGetId: stirrer.EMPTY,
+                connOnData: stirrer.EMPTY,
+                connOnClose: stirrer.EMPTY,
+                connStop: stirrer.EMPTY
+            },
+            beforeEach: function () {
+
+                this.getStub("common/utils").assignPars.restore();
+
+                var conn = {
+                    getId: this.spies.connGetId,
+                    onData: this.spies.connOnData,
+                    onClose: this.spies.connOnClose,
+                    stop: this.spies.connStop
+                };
+
+                this.stubs.providerOnNewConn.callsArgWith(0, conn);
+
+                this.getStub("providers/factory").getProvider.returns({
+                    start: this.spies.providerStart,
+                    stop: this.spies.providerStop,
+                    onNewConnection: this.stubs.providerOnNewConn
+                });
+            }
         });
 
+        cup.pour("should stop the server", function () {
 
+            var server = getNewServer(this, {
+                config: {
+                    externalSession: true
+                }
+            });
 
+            server.start();
+            server.stop();
+        }, {
+            afters: function (next) {
+                expect(this.spies.providerStop).to.have.been.calledOnce();
+                expect(this.spies.connStop).to.have.been.calledOnce();
+
+                next();
+            }
+        });
+
+        cup.pour("shouldnt stop if not started", function(){
+            var server = getNewServer(this);
+            server.stop();
+        }, {
+            afters:function(next){
+                expect(this.spies.providerStop).to.not.have.been.called();
+                expect(this.spies.connStop).to.not.have.been.called();
+                next();
+            }
+        });
+
+        cup.pour("should stop only once", function () {
+
+            var server = getNewServer(this, {
+                config: {
+                    externalSession: true
+                }
+            });
+
+            server.start();
+            server.stop();
+            server.stop();
+        }, {
+            afters: function (next) {
+                expect(this.spies.providerStop).to.have.been.calledOnce();
+                expect(this.spies.connStop).to.have.been.calledOnce();
+
+                next();
+            }
+        });
     });
 });

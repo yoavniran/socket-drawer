@@ -35,7 +35,7 @@
       ]
     },
     "travis-cov": {
-      "threshold": 90
+      "threshold": 96
     }
   },
   "dependencies": {

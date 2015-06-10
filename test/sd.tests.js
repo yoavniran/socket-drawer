@@ -1,6 +1,4 @@
 require("../src/index"); //set the baseline for coverage
-require("../src/providers/ConnectionBase");
-require("../src/providers/ProviderBase");
 //******************************************
 
 require("mocha-stirrer").RequireMocker.addGlobalDontMock(["debug", "async", "lodash", "events", "util"]);

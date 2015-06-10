@@ -17,11 +17,15 @@ var ConnectionBase = (function () {
         throw new Error("ConnectionBase - send - not implemented");
     };
 
-    ConnectionBase.prototype.onData = function () {
+    ConnectionBase.prototype.onData = function (/*cb*/) {
         throw new Error("ConnectionBase - onData - not implemented");
     };
 
-    ConnectionBase.prototype.onClose = function () {
+    ConnectionBase.prototype.stop = function(){
+        throw new Error("ConnectionBase - stop - not implemented");
+    };
+
+    ConnectionBase.prototype.onClose = function (/*cb*/) {
         throw new Error("ConnectionBase - onClose - not implemented");
     };
 

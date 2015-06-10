@@ -57,15 +57,31 @@ describe("utils tests", function () {
         });
     });
 
-    describe("test crypto length", function(){
+    describe("test crypto length", function () {
 
-        it("should return correct length", function(){
+        it("should return correct length", function () {
             expect(utils.getCryptoSaltLength(0)).to.equal(0);
             expect(utils.getCryptoSaltLength(8)).to.equal(12);
             expect(utils.getCryptoSaltLength(11)).to.equal(16);
             expect(utils.getCryptoSaltLength(12)).to.equal(16);
             expect(utils.getCryptoSaltLength(16)).to.equal(24);
         });
+    });
 
+    describe("test set immediate", function () {
+
+        var counter = 0;
+
+        it("should call set immediate", function (done) {
+
+            utils.setImmediate(function () {
+                counter += 1;
+                done();
+            });
+        });
+
+        after(function () {
+            expect(counter).to.equal(1);
+        });
     });
 });

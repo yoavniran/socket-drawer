@@ -1,5 +1,6 @@
 var ProviderBase = (function () {
     "use strict";
+
     function ProviderBase(options) {
         this.initialize(options);
     }
@@ -19,6 +20,7 @@ var ProviderBase = (function () {
     ProviderBase.prototype.onNewConnection = function (/*cb*/) {
         throw new Error("ProviderBase - onNewConnection - not implemented");
     };
+
     return ProviderBase;
 })();
 

@@ -28,9 +28,12 @@ var WSConnection = (function(){
     };
 
     WSConnection.prototype.onData = function (cb) {
-
         this._conn.onmessage = cb;
         return this;
+    };
+
+    WSConnection.prototype.stop = function(){
+        this._conn.terminate();
     };
 
     WSConnection.prototype.onClose = function (cb) {

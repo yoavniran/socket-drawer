@@ -21,7 +21,6 @@ var SocketsServer = (function () {
     "use strict";
 
     var KEYS = consts.SERVER_KEYS,
-
         defaults = {
             "tokenSecretLength": 16,
             "externalSession": false,
@@ -235,15 +234,11 @@ var SocketsServer = (function () {
     function _stopServer() {
 
         if (this.isRunning()) {
-            //todo: implement stopping procedures
-
-            this._socketsProvider.stop();
-
+            this._socketsProvider.stop(); //stop the ws server
+            _stopConnections(this._connections); //stop all connections
         }
 
         this._running = false;
-
-        throw new Error("not implemented");
     }
 
     function _onIncomingConnection(conn) {
@@ -367,7 +362,6 @@ var SocketsServer = (function () {
     }
 
     function _getHelperFunctions(connId, data) {
-
         return serverHelperFunctions.getFunctions(this, connId, data);
     }
 
@@ -511,6 +505,15 @@ var SocketsServer = (function () {
 
     function _isSilentFail() {
         return this.enabled("silentFail");
+    }
+
+    function _stopConnections(conns){
+
+        debug("about to stop connections");
+
+        Object.keys(conns).forEach(function(connId){
+           conns[connId].stop();
+        });
     }
 
     function _onConnectionClose(connId) {
