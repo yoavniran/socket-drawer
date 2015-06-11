@@ -1,5 +1,5 @@
 var ConnectionBase = require("../ConnectionBase"),
-    uuid = require("uuid"),
+    uuid = require("node-uuid"),
     util = require("util");
 
 var WSConnection = (function(){
@@ -7,7 +7,7 @@ var WSConnection = (function(){
 
     function WSConnection(conn, options) {
 
-        ConnectionBase.call(this, options);
+        ConnectionBase.call(this, conn, options);
 
         this._conn = conn;
     }

@@ -1,12 +1,18 @@
 var ProviderBase = require("../ProviderBase"),
     Connection = require("./Connection"),
     util = require("util"),
-    socketio= require("socket.io");
+    sdUtils = require("../../common/utils"),
+    socketio; //dynamically loading so not to have to have a hard dependency on this module
+    // = require("socket.io");
 
 var SocketIOProvider = (function(){
     "use strict";
 
     var SocketIOProvider = function (options) {
+
+        if (!socketio){
+            socketio =  sdUtils.dynamicLoad( "socket.io");
+        }
 
         ProviderBase.call(this, options);
 

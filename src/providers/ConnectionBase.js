@@ -2,10 +2,10 @@ var ConnectionBase = (function () {
     "use strict";
 
     function ConnectionBase(conn, options) {
-        this.initialize(options);
+        this.initialize(conn, options);
     }
 
-    ConnectionBase.prototype.initialize = function (/*options*/) {
+    ConnectionBase.prototype.initialize = function (/*conn, options*/) {
         //do nothing
     };
 

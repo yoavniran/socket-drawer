@@ -1,12 +1,17 @@
 var ProviderBase = require("../ProviderBase"),
     Connection = require("./Connection"),
     util = require("util"),
-    sockjs = require("sockjs");
+    sdUtils = require("../../common/utils"),
+    sockjs; //dynamically loading so not to have to have a hard dependency on this module
 
 var SockJSProvider = (function () {
     "use strict";
 
     var SockJSProvider = function (options) {
+
+        if (!sockjs) {
+            sockjs = sdUtils.dynamicLoad("sockjs");
+        }
 
         ProviderBase.call(this, options);
 

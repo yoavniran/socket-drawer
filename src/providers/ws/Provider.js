@@ -1,13 +1,18 @@
 var util = require("util"),
-    debug = require("sdrawer:wsProvider"),
-    WebSocketServer = require("ws").Server,
+    debug = require("debug")("sdrawer:wsProvider"),
+    sdUtils = require("../../common/utils"),
     ProviderBase = require("../ProviderBase"),
-    Connection = require("./Connection");
+    Connection = require("./Connection"),
+    WebSocketServer;//dynamically loading so not to have to have a hard dependency on this module
 
 var WSProvider = (function () {
     "use strict";
 
     var WSProvider = function (options) {
+
+        if (!WebSocketServer) {
+            WebSocketServer = sdUtils.dynamicLoad("ws").Server;
+        }
 
         ProviderBase.call(this, options);
 
