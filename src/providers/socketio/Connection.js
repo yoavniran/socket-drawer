@@ -6,10 +6,10 @@ var SocketIOConnection  = (function(){
 
     function SocketIOConnection(conn, options) {
 
-        ConnectionBase.call(this, options);
+        ConnectionBase.call(this, conn, options);
 
         this._conn = conn;
-        this._listenOnEventName = options.dataEventName || "message";
+        this._listenOnEventName = (options && options.dataEventName) || "message";
     }
 
     util.inherits(SocketIOConnection, ConnectionBase);

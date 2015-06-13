@@ -24,7 +24,7 @@ var WSProvider = (function () {
 
     WSProvider.prototype.start = function (options) {
 
-        debug("start called - creating WS provider server");
+        debug("start called - starting WS provider server");
 
         this._server = new WebSocketServer({
             server: options.httpServer,

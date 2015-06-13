@@ -1,4 +1,3 @@
-
 require("../../src/providers/ConnectionBase");
 
 require("../../src/providers/ws/Provider");
@@ -22,4 +21,9 @@ describe("test providers implementations", function() {
 
     require("./wsProvider.test");
     require("./wsConnection.test");
+
+    require("./sockjsProvider.test");
+    require("./sockjsConnection.test");
+
+    require("./socketioProvider.test");
 });

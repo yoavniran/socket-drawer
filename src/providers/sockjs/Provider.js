@@ -31,6 +31,8 @@ var SockJSProvider = (function () {
      */
     SockJSProvider.prototype.start = function (options) {
 
+        debug("start called - starting SockJS provider server");
+
         this._server = sockjs.createServer({
             sockjs_url: options.sockUrl,
             prefix: options.path

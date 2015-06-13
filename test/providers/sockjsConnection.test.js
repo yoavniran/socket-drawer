@@ -4,8 +4,7 @@ var chai = require("chai"),
     sinonChai = require("sinon-chai"),
     stirrer = require("mocha-stirrer");
 
-
-describe("WS Connection tests", function () {
+describe("SockJS Connection tests", function () {
     "use strict";
 
     chai.use(sinonChai);
@@ -14,25 +13,28 @@ describe("WS Connection tests", function () {
     function getNewConn(cup, options) {
 
         var Connection = cup.getRequired("connection");
-        return  new Connection(cup.pars.conn, options);
+        return new Connection(cup.pars.conn, options);
     }
 
     var cup = stirrer.grind({
-        requires: [{path: "../../src/providers/ws/Connection", options: {alias: "connection"}}],
+        requires: [{path: "../../src/providers/sockjs/Connection", options: {alias: "connection"}}],
         pars: {
-            uuid: "1234-abc"
+            connId: "1234-abcde"
         },
         spies: {
             connSend: stirrer.EMPTY,
+            connOn: stirrer.EMPTY,
             connTerminate: stirrer.EMPTY
         },
         before: function () {
-            this.getStub("node-uuid").returns(this.pars.uuid);
 
             this.pars.conn = {
-                send: this.spies.connSend,
-                terminate: this.spies.connTerminate,
+                id: this.pars.connId,
+                on: this.spies.connOn,
+                emit: this.spies.connSend,
+                close: this.spies.connTerminate,
                 OPEN: 1,
+                writable: true,
                 readyState: 1
             };
         }
@@ -44,13 +46,7 @@ describe("WS Connection tests", function () {
 
         conn.initialize();
 
-        expect(conn.getId()).to.equal(this.pars.uuid);
-    }, {
-        afters: function (next) {
-
-            expect(this.getStub("node-uuid")).to.have.been.called();
-            next();
-        }
+        expect(conn.getId()).to.equal(this.pars.connId);
     });
 
     cup.pour("send should use conn send", function () {
@@ -60,7 +56,7 @@ describe("WS Connection tests", function () {
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.send).to.have.been.calledWith("hello");
+            expect(this.pars.conn.emit).to.have.been.calledWith("data","hello");
             next();
         }
     });
@@ -68,11 +64,11 @@ describe("WS Connection tests", function () {
     cup.pour("on data should register handler", function () {
         var conn = getNewConn(this);
 
-        var retConn = conn.onData("foo");
+        var retConn = conn.onData("data");
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.onmessage).to.equal("foo");
+            expect(this.spies.connOn).to.have.been.calledWith("data", "data");
             next();
         }
     });
@@ -84,7 +80,7 @@ describe("WS Connection tests", function () {
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.terminate).to.have.been.called();
+            expect(this.pars.conn.close).to.have.been.called();
             next();
         }
     });
@@ -92,12 +88,12 @@ describe("WS Connection tests", function () {
     cup.pour("on close should register handler", function () {
         var conn = getNewConn(this);
 
-        var retConn = conn.onClose("foo");
+        var retConn = conn.onClose("close");
 
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.onclose).to.equal("foo");
+            expect(this.spies.connOn).to.have.been.calledWith("close", "close");
             next();
         }
     });

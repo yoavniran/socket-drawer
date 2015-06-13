@@ -6,7 +6,7 @@ var SockJSConnection = (function(){
 
     function SockJSConnection(conn, options) {
 
-        ConnectionBase.call(this, options);
+        ConnectionBase.call(this, conn, options);
 
         this._conn = conn;
     }
@@ -23,6 +23,11 @@ var SockJSConnection = (function(){
 
     SockJSConnection.prototype.send = function (msg) {
         this._conn.emit("data", msg);
+        return this;
+    };
+
+    SockJSConnection.prototype.stop = function(){
+        this._conn.close();
         return this;
     };
 
