@@ -47,9 +47,9 @@
   },
   "devDependencies": {
     "blanket": "^1.1.6",
-    "chai": "*",
+    "chai": "^2.3.0",
     "coveralls": "^2.11.2",
-    "dirty-chai": "^1.2.0",
+    "dirty-chai": "^1.2.1",
     "grunt": "^0.4.5",
     "grunt-blanket": "0.0.8",
     "grunt-contrib-clean": "^0.6.0",
@@ -61,7 +61,7 @@
     "mocha-lcov-reporter": "0.0.2",
     "mocha-stirrer": "^0.2.0",
     "sinon": "*",
-    "sinon-chai": "^2.7.0",
+    "sinon-chai": "^2.8.0",
     "time-grunt": "^1.1.0",
     "travis-cov": "^0.2.5"
   }

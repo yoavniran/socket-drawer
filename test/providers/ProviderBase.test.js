@@ -1,10 +1,9 @@
 var chai = require("chai"),
     expect = chai.expect,
-    dirtyChai = require("dirty-chai"),
-    sinonChai = require("sinon-chai"),
     ProviderBase = require("../../src/providers/ProviderBase");
 
 describe("provider base tests", function () {
+    "use strict";
 
     var providerBase = new ProviderBase();
 

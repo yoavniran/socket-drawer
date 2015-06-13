@@ -1,4 +1,5 @@
 var ProviderBase = require("../ProviderBase"),
+    debug = require("debug")("sdrawer:sockjsProvider"),
     Connection = require("./Connection"),
     util = require("util"),
     sdUtils = require("../../common/utils"),
@@ -35,6 +36,17 @@ var SockJSProvider = (function () {
         });
 
         this._server.installHandlers(options.httpServer);
+
+        return this;
+    };
+
+    SockJSProvider.prototype.stop = function(){
+
+        debug("stop called - stopping SockJS provider server");
+
+        this._server.
+
+        this._server = null;
 
         return this;
     };
