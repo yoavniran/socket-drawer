@@ -17,6 +17,7 @@ var SockJSProvider = (function () {
         ProviderBase.call(this, options);
 
         this._server = null;
+        this._onNewConnectionHandler = null;
     };
 
     util.inherits(SockJSProvider, ProviderBase);
@@ -40,11 +41,14 @@ var SockJSProvider = (function () {
         return this;
     };
 
-    SockJSProvider.prototype.stop = function(){
+    SockJSProvider.prototype.stop = function () {
 
         debug("stop called - stopping SockJS provider server");
 
-        this._server.
+        if (this._onNewConnectionHandler) {
+            this._server.removeListener("connection", this._onNewConnectionHandler);
+            this._onNewConnectionHandler = null;
+        }
 
         this._server = null;
 
@@ -53,13 +57,18 @@ var SockJSProvider = (function () {
 
     SockJSProvider.prototype.onNewConnection = function (cb, options) {
 
-        this._server.on("connection", function (sjConn) {
-            var connection = new Connection(sjConn, options);
-            cb(connection);
-        });
+        this._onNewConnectionHandler = _onNewConnection.bind(this, cb, options);
+        this._server.on("connection", this._onNewConnectionHandler);
 
         return this;
     };
+
+    function _onNewConnection(cb, options, sjConn) {
+
+        debug("new sock js connection");
+        var connection = new Connection(sjConn, options);
+        cb(connection);
+    }
 
     return SockJSProvider;
 })();

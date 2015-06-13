@@ -60,6 +60,7 @@ var WSProvider = (function () {
 
     function _onNewConnection(cb, options, client) {
 
+        debug("new ws connection");
         var connection = new Connection(client, options);
         cb(connection);
     }
