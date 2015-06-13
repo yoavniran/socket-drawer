@@ -4,11 +4,19 @@ var chai = require("chai"),
     sinonChai = require("sinon-chai"),
     stirrer = require("mocha-stirrer");
 
-describe("broadcaster tests", function () {
+describe("WS Provider tests", function () {
     "use strict";
 
     chai.use(sinonChai);
     chai.use(dirtyChai);
+
+    function getNewProvider(cup, options){
+
+        var Provider = cup.getRequired("provider");
+        var provider = new Provider(options);
+
+        return provider;
+    }
 
     var cup = stirrer.grind({
         requires: [{path: "../../src/providers/ws/Provider", options: {alias: "provider"}}],
@@ -45,10 +53,9 @@ describe("broadcaster tests", function () {
 
     cup.pour("should start successfully", function () {
 
-        var Provider = this.getRequired("provider");
-        var provider = new Provider(this.pars.newProviderOptions);
-
+        var provider = getNewProvider(this, this.pars.newProviderOptions);
         provider.start(this.pars.serverOptions);
+
     }, {
         afters: function (next) {
 
@@ -66,8 +73,7 @@ describe("broadcaster tests", function () {
 
     cup.pour("start should fail without options", function () {
 
-        var Provider = this.getRequired("provider");
-        var provider = new Provider();
+        var provider = getNewProvider(this);
 
         expect(function () {
             provider.start();
@@ -75,8 +81,8 @@ describe("broadcaster tests", function () {
     });
 
     cup.pour("should register new connection handler successfully", function () {
-        var Provider = this.getRequired("provider");
-        var provider = new Provider();
+
+        var provider = getNewProvider(this);
 
         this.pars.newConnFn = function () {
         };
@@ -92,8 +98,8 @@ describe("broadcaster tests", function () {
     });
 
     cup.pour("should fail to register new conn handler if not started", function () {
-        var Provider = this.getRequired("provider");
-        var provider = new Provider();
+
+        var provider = getNewProvider(this);
 
         expect(function () {
             provider.onNewConnection();
@@ -102,8 +108,7 @@ describe("broadcaster tests", function () {
 
     cup.pour("should call on new connection handler", function () {
 
-        var Provider = this.getRequired("provider");
-        var provider = new Provider();
+        var provider = getNewProvider(this);
 
         provider.start(this.pars.serverOptions);
         provider.onNewConnection(this.spies.newConnHandler, this.pars.connOptions);
@@ -125,8 +130,7 @@ describe("broadcaster tests", function () {
 
     cup.pour("should stop successfully", function () {
 
-        var Provider = this.getRequired("provider");
-        var provider = new Provider();
+        var provider = getNewProvider(this);
 
         provider.start(this.pars.serverOptions);
         provider.onNewConnection(this.spies.newConnHandler);

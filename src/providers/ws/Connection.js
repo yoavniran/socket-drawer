@@ -34,6 +34,7 @@ var WSConnection = (function(){
 
     WSConnection.prototype.stop = function(){
         this._conn.terminate();
+        return this;
     };
 
     WSConnection.prototype.onClose = function (cb) {
