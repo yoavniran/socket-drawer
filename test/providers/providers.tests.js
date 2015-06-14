@@ -26,4 +26,5 @@ describe("test providers implementations", function() {
     require("./sockjsConnection.test");
 
     require("./socketioProvider.test");
+    require("./socketioConnection.test");
 });

@@ -86,7 +86,5 @@ module.exports = function (grunt) {
     grunt.registerTask("coverage", ["clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:htmlcov", "coveralls"]);
     grunt.registerTask("build", ["jshint", "coverage", "test", "mochaTest:travis-cov"]);
 
-    grunt.registerTask("bla", ["test","clean", "blanket", "copy:test", "mochaTest:coverage", "mochaTest:travis-cov" ]);
-
     grunt.registerTask("default", ["jshint", "test", "localcov"]);
 };

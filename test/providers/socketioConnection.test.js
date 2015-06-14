@@ -4,7 +4,7 @@ var chai = require("chai"),
     sinonChai = require("sinon-chai"),
     stirrer = require("mocha-stirrer");
 
-describe("SockJS Connection tests", function () {
+describe("SocketIO Connection tests", function () {
     "use strict";
 
     chai.use(sinonChai);
@@ -17,30 +17,30 @@ describe("SockJS Connection tests", function () {
     }
 
     var cup = stirrer.grind({
-        requires: [{path: "../../src/providers/sockjs/Connection", options: {alias: "connection"}}],
+        requires: [{path: "../../src/providers/socketio/Connection", options: {alias: "connection"}}],
         pars: {
-            connId: "1234-abcde"
+            connId: "1234-abc123",
+            dataEventName: "blabla"
         },
         spies: {
             connSend: stirrer.EMPTY,
             connOn: stirrer.EMPTY,
-            connTerminate: stirrer.EMPTY
+            connOnClose: stirrer.EMPTY
         },
         before: function () {
 
             this.pars.conn = {
                 id: this.pars.connId,
+                send: this.spies.connSend,
+                onclose: this.spies.connOnClose,
                 on: this.spies.connOn,
-                emit: this.spies.connSend,
-                close: this.spies.connTerminate,
-                OPEN: 1,
-                writable: true,
-                readyState: 1
+                OPEN: "open",
+                conn: {readyState: "open"}
             };
         }
     });
 
-    cup.pour("should initialize with its own id", function () {
+    cup.pour("should initialize with uuid", function () {
 
         var conn = getNewConn(this);
 
@@ -56,19 +56,19 @@ describe("SockJS Connection tests", function () {
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.emit).to.have.been.calledWith("data","hello");
+            expect(this.pars.conn.send).to.have.been.calledWith("hello");
             next();
         }
     });
 
     cup.pour("on data should register handler", function () {
-        var conn = getNewConn(this);
+        var conn = getNewConn(this, {dataEventName: this.pars.dataEventName});
 
         var retConn = conn.onData("data");
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.spies.connOn).to.have.been.calledWith("data", "data");
+            expect(this.spies.connOn).to.have.been.calledWith(this.pars.dataEventName, "data");
             next();
         }
     });
@@ -80,7 +80,7 @@ describe("SockJS Connection tests", function () {
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.pars.conn.close).to.have.been.called();
+            expect(this.pars.conn.onclose).to.have.been.called();
             next();
         }
     });
@@ -93,7 +93,7 @@ describe("SockJS Connection tests", function () {
         expect(retConn).to.equal(conn);
     }, {
         afters: function (next) {
-            expect(this.spies.connOn).to.have.been.calledWith("close", "close");
+            expect(this.spies.connOn).to.have.been.calledWith("disconnect", "close");
             next();
         }
     });
@@ -103,5 +103,4 @@ describe("SockJS Connection tests", function () {
 
         expect(conn.isWritable()).to.be.true();
     });
-
 });

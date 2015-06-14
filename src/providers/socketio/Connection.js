@@ -26,6 +26,11 @@ var SocketIOConnection  = (function(){
         return this;
     };
 
+    SocketIOConnection.prototype.stop = function(){
+        this._conn.onclose();
+        return this;
+    };
+
     SocketIOConnection.prototype.onData = function (cb) {
         this._conn.on(this._listenOnEventName, cb);
         return this;
